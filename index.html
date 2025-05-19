@@ -35,13 +35,12 @@
 
 <div class="form-container">
   <div class="form-header">
-    <img src="data/logo.jpg" alt="Logo">
+    <img src="/data/logo.jpg" alt="Logo">
     <h2>Whole Seller QPS Scheme</h2>
   </div>
 
-  
 
-  <form id="qpsForm" method="POST" enctype="multipart/form-data">
+  <form id="qpsForm" enctype="multipart/form-data">
     <div class="row mb-3">
       <div class="col-md-6">
         <label for="state" class="form-label">State</label>
@@ -89,18 +88,18 @@
 
     <div class="mb-3">
       <label for="billPhoto" class="form-label">Upload Bill Photo</label>
-      <input type="file" class="form-control" id="billPhoto" name="billPhoto" accept="image/*" required>
+      <input type="file" class="form-control" id="billPhoto" accept="image/*" required>
     </div>
 
     <button type="submit" id="submitBtn" class="btn btn-primary w-100" disabled>Submit</button>
   </form>
-  <br>
+
   <div id="formAlert"></div>
 </div>
 
 <script>
 let data = {};
-fetch("data/dropdown_with_password.json")
+fetch("data/dropdown.json")
   .then(res => res.json())
   .then(json => {
     data = json;
@@ -187,40 +186,55 @@ function validateForm() {
   }
 }
 
-// Handle form submission
 document.getElementById("qpsForm").addEventListener("submit", function(e) {
   e.preventDefault();
   if (!validateForm()) return;
 
-  const formData = new FormData();
-  formData.append("state", stateSel.value);
-  formData.append("ss", ssSel.value);
-  formData.append("db", dbSel.value);
-  formData.append("ws", wsSel.value);
-  formData.append("dbPassword", passwordInput.value);
-  formData.append("salesQty", document.getElementById("salesQty").value);
-  formData.append("date", document.getElementById("date").value);
-  formData.append("billNo", document.getElementById("billNo").value);
-  formData.append("billPhoto", document.getElementById("billPhoto").files[0]);
+  const fileInput = document.getElementById("billPhoto");
+  const file = fileInput.files[0];
 
-  fetch("https://script.google.com/macros/s/AKfycbxuYPtp5al1Vs6wQFucBAXp081TCTcEqh22NVZ0gKU1RowKjbkSaVbdzmv_gpkoL5s4/exec", {
-    method: "POST",
-    body: formData
-  })
-  .then(res => {
-    if (res.ok) {
-      showAlert("Form submitted successfully!", "success");
-      document.getElementById("qpsForm").reset();
-      submitBtn.disabled = true;
-      passwordInput.classList.remove("is-valid");
-    } else {
-      throw new Error("Form submission failed.");
-    }
-  })
-  .catch(err => {
-    showAlert("An error occurred. Please try again later.", "danger");
-  });
+  if (file) {
+    const reader = new FileReader();
+
+    reader.onload = function(event) {
+      const base64BillPhoto = event.target.result; // this includes the data URI prefix
+
+      const formData = new FormData();
+      formData.append("state", stateSel.value);
+      formData.append("ss", ssSel.value);
+      formData.append("db", dbSel.value);
+      formData.append("ws", wsSel.value);
+      formData.append("dbPassword", passwordInput.value);
+      formData.append("salesQty", document.getElementById("salesQty").value);
+      formData.append("date", document.getElementById("date").value);
+      formData.append("billNo", document.getElementById("billNo").value);
+      formData.append("billPhoto", base64BillPhoto);  // Now it's base64
+
+      fetch("https://script.google.com/macros/s/AKfycbzVIkkLtzYSeq3fYFpvb6ndIa96gEDbbbhs3Pg6P3tpS33ck6LpQVAQOU4hESqjPpJp/exec", {
+        method: "POST",
+        body: formData
+      })
+      .then(res => {
+        if (res.ok) {
+          showAlert("Form submitted successfully!", "success");
+          document.getElementById("qpsForm").reset();
+          submitBtn.disabled = true;
+          passwordInput.classList.remove("is-valid");
+        } else {
+          throw new Error("Form submission failed.");
+        }
+      })
+      .catch(err => {
+        showAlert("An error occurred. Please try again later.", "danger");
+      });
+    };
+
+    reader.readAsDataURL(file); // convert to base64
+  } else {
+    showAlert("Please select a bill photo to upload.", "warning");
+  }
 });
+
 
 function showAlert(message, type) {
   formAlert.innerHTML = `

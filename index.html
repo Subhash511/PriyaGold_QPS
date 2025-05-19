@@ -93,7 +93,7 @@
 
     <button type="submit" id="submitBtn" class="btn btn-primary w-100" disabled>Submit</button>
   </form>
-  <br>
+
   <div id="formAlert"></div>
   <br>
   <div id="loadingSpinner" class="text-center" style="display: none;">
@@ -205,55 +205,34 @@ document.getElementById("qpsForm").addEventListener("submit", function(e) {
   e.preventDefault();
   if (!validateForm()) return;
 
-  const fileInput = document.getElementById("billPhoto");
-  const file = fileInput.files[0];
+  const formData = new FormData();
+  formData.append("state", stateSel.value);
+  formData.append("ss", ssSel.value);
+  formData.append("db", dbSel.value);
+  formData.append("ws", wsSel.value);
+  formData.append("dbPassword", passwordInput.value);
+  formData.append("salesQty", document.getElementById("salesQty").value);
+  formData.append("date", document.getElementById("date").value);
+  formData.append("billNo", document.getElementById("billNo").value);
+  formData.append("billPhoto", document.getElementById("billPhoto").files[0]);
 
-  if (file) {
-    const reader = new FileReader();
-
-    reader.onload = function(event) {
-      const base64BillPhoto = event.target.result;
-
-      const formData = new FormData();
-      formData.append("state", stateSel.value);
-      formData.append("ss", ssSel.value);
-      formData.append("db", dbSel.value);
-      formData.append("ws", wsSel.value);
-      formData.append("dbPassword", passwordInput.value);
-      formData.append("salesQty", document.getElementById("salesQty").value);
-      formData.append("date", document.getElementById("date").value);
-      formData.append("billNo", document.getElementById("billNo").value);
-      formData.append("billPhoto", base64BillPhoto);
-
-      // Show spinner and disable button
-      document.getElementById("loadingSpinner").style.display = "block";
+  fetch("https://script.google.com/macros/s/AKfycbxuYPtp5al1Vs6wQFucBAXp081TCTcEqh22NVZ0gKU1RowKjbkSaVbdzmv_gpkoL5s4/exec", {
+    method: "POST",
+    body: formData
+  })
+  .then(res => {
+    if (res.ok) {
+      showAlert("Form submitted successfully!", "success");
+      document.getElementById("qpsForm").reset();
       submitBtn.disabled = true;
-
-      fetch("https://script.google.com/macros/s/AKfycbzVIkkLtzYSeq3fYFpvb6ndIa96gEDbbbhs3Pg6P3tpS33ck6LpQVAQOU4hESqjPpJp/exec", {
-        method: "POST",
-        body: formData
-      })
-      .then(res => {
-        document.getElementById("loadingSpinner").style.display = "none";
-        if (res.ok) {
-          showAlert("Form submitted successfully!", "success");
-          document.getElementById("qpsForm").reset();
-          submitBtn.disabled = true;
-          passwordInput.classList.remove("is-valid");
-        } else {
-          throw new Error("Form submission failed.");
-        }
-      })
-      .catch(err => {
-        document.getElementById("loadingSpinner").style.display = "none";
-        showAlert("An error occurred. Please try again later.", "danger");
-      });
-    };
-
-    reader.readAsDataURL(file);
-  } else {
-    showAlert("Please upload a bill photo.", "warning");
-  }
+      passwordInput.classList.remove("is-valid");
+    } else {
+      throw new Error("Form submission failed.");
+    }
+  })
+  .catch(err => {
+    showAlert("An error occurred. Please try again later.", "danger");
+  });
 });
 
 

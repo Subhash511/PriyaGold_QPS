@@ -105,6 +105,8 @@
 </div>
 
 <br>
+<a href="billing.html" class="btn btn-success">Check Your Bills</a>
+<br>
 <br>
 <img src="images/scheme-photo.jpg" alt="Banner" class="img-fluid rounded mb-3" style="max-width: 100%; height: auto;">
 
@@ -230,7 +232,7 @@ document.getElementById("qpsForm").addEventListener("submit", function(e) {
       document.getElementById("loadingSpinner").style.display = "block";
       submitBtn.disabled = true;
 
-      fetch("https://script.google.com/macros/s/AKfycbzVIkkLtzYSeq3fYFpvb6ndIa96gEDbbbhs3Pg6P3tpS33ck6LpQVAQOU4hESqjPpJp/exec", {
+      fetch("https://script.google.com/macros/s/AKfycbyzbgl0mOp2poFLauxPEKirZOhIIzXVMT-Rm9T_Zq59vEklDKKMq8pFTxnYqZR3HVfm/exec", {
         method: "POST",
         body: formData
       })
